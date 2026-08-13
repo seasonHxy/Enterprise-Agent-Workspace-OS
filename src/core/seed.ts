@@ -1,0 +1,147 @@
+import type { AgentApp, AgentRun, AuditEvent, Capability, WorkspaceState } from './types'
+
+export const capabilityCatalog: Capability[] = [
+  {
+    id: 'web-research',
+    label: '网页研究',
+    description: '读取公开网页与搜索结果，不访问登录态。',
+    resource: 'public-web',
+    scope: 'https://*',
+    mode: 'read',
+    risk: 1,
+    approval: 'automatic',
+  },
+  {
+    id: 'workspace-files',
+    label: '工作区文件',
+    description: '仅允许读取当前绑定的项目目录。',
+    resource: 'local-files',
+    scope: './workspace/**',
+    mode: 'read',
+    risk: 2,
+    approval: 'first-use',
+  },
+  {
+    id: 'github-write',
+    label: 'GitHub 写入',
+    description: '创建 Issue 或 Pull Request，不允许直接合并。',
+    resource: 'github',
+    scope: 'repo:team/product',
+    mode: 'write',
+    risk: 3,
+    approval: 'every-time',
+  },
+  {
+    id: 'production-deploy',
+    label: '生产环境部署',
+    description: '将已审核构建发布到生产环境。',
+    resource: 'production',
+    scope: 'service:workspace-api',
+    mode: 'execute',
+    risk: 4,
+    approval: 'two-person',
+  },
+  {
+    id: 'enterprise-knowledge',
+    label: '企业知识检索',
+    description: '仅检索当前租户和用户组有权访问的内部知识片段。',
+    resource: 'enterprise-knowledge',
+    scope: 'tenant:current/**',
+    mode: 'read',
+    risk: 2,
+    approval: 'first-use',
+  },
+]
+
+export const seedApps: AgentApp[] = [
+  {
+    id: 'app-research',
+    name: '市场研究助手',
+    description: '追踪竞品动态，提炼变化并生成每周简报。',
+    prompt: '研究指定市场的最新动态，核对来源并输出结构化简报。',
+    runtime: 'cloud',
+    status: 'ready',
+    capabilities: [capabilityCatalog[0]],
+    templateId: 'template-market-watch',
+    workflowSteps: ['确定竞品与时间窗口', '检索并聚类公开信息', '交叉核对重要变化', '生成带来源的管理层简报'],
+    version: 1,
+    schedule: '每周一 09:00',
+    createdAt: '2026-08-13T01:20:00.000Z',
+  },
+  {
+    id: 'app-release',
+    name: '版本发布管家',
+    description: '读取本地变更、整理发布说明并创建 Pull Request。',
+    prompt: '检查工作区变更，运行测试并准备发布说明。',
+    runtime: 'local',
+    status: 'ready',
+    capabilities: [capabilityCatalog[1], capabilityCatalog[2]],
+    templateId: 'template-release',
+    workflowSteps: ['读取并归类代码变更', '运行测试与静态检查', '生成发布说明与风险摘要', '审批后创建 Pull Request'],
+    version: 1,
+    createdAt: '2026-08-13T01:32:00.000Z',
+  },
+  {
+    id: 'app-enterprise-solution',
+    name: '企业客户方案助手',
+    description: '从有权企业知识中提取规范与清单，生成可审核的客户方案初稿。',
+    prompt: '基于企业知识库中的私有化部署规范和交付检查清单，生成客户解决方案，并标注知识证据。',
+    runtime: 'cloud',
+    status: 'ready',
+    capabilities: [capabilityCatalog[4]],
+    workflowSteps: ['确认客户背景与交付范围', '审批后检索有权企业知识', '按模板生成带引用的方案初稿', '人工审核并沉淀流程经验'],
+    version: 1,
+    createdAt: '2026-08-13T14:30:00.000Z',
+  },
+]
+
+export const seedRuns: AgentRun[] = [
+  {
+    id: 'run-001',
+    appId: 'app-research',
+    appName: '市场研究助手',
+    runtime: 'cloud',
+    status: 'completed',
+    summary: '已汇总 12 个可信来源，生成周报。',
+    progress: 100,
+    startedAt: '2026-08-13T02:10:00.000Z',
+  },
+  {
+    id: 'run-002',
+    appId: 'app-release',
+    appName: '版本发布管家',
+    runtime: 'local',
+    status: 'waiting',
+    summary: '等待授权：GitHub 写入',
+    progress: 72,
+    startedAt: '2026-08-13T03:06:00.000Z',
+    capability: capabilityCatalog[2],
+    pendingCapabilityIds: ['workspace-files', 'github-write'],
+    approvedCapabilityIds: ['workspace-files'],
+  },
+]
+
+export const seedAudits: AuditEvent[] = [
+  {
+    id: 'audit-001',
+    runId: 'run-001',
+    action: '读取公开网页',
+    outcome: 'allowed',
+    risk: 1,
+    timestamp: '2026-08-13T02:12:00.000Z',
+  },
+  {
+    id: 'audit-002',
+    runId: 'run-002',
+    action: '请求 GitHub 写入',
+    outcome: 'blocked',
+    risk: 3,
+    timestamp: '2026-08-13T03:08:00.000Z',
+  },
+]
+
+export const seedWorkspace: WorkspaceState = {
+  apps: seedApps,
+  runs: seedRuns,
+  audits: seedAudits,
+}

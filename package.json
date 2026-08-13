@@ -1,0 +1,43 @@
+{
+  "name": "agent-workspace-os",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A local-first, cloud-capable workspace for safe AI agents and generated apps.",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "memory:server": "node --env-file=.env --import tsx server/memory-bridge.ts",
+    "enterprise:server": "node --env-file=.env --import tsx server/enterprise-gateway.ts",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint . --max-warnings 0",
+    "check": "npm run lint && npm run test && npm run build"
+  },
+  "dependencies": {
+    "@letta-ai/letta-client": "^1.12.1",
+    "@vitejs/plugin-react": "4.3.4",
+    "lucide-react": "^0.468.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "vite": "6.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.19.0",
+    "@types/node": "^22.19.19",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.19.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.3",
+    "globals": "17.8.0",
+    "tsx": "^4.23.12",
+    "typescript": "5.7.3",
+    "typescript-eslint": "8.22.0",
+    "vitest": "^3.0.5"
+  },
+  "engines": {
+    "node": ">=20.17.0"
+  }
+}
